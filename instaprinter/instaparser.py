@@ -23,9 +23,9 @@ class InstagramPost():
 	# grab most recent post meta data
 	def poll_feed(self,user):
 		try:
-			url = "https://api.instagram.com/v1/users/self/media/recent/?access_token={0}&count=1".format(user.access_token)
+			url = "https://api.instagram.com/v1/users/self/media/recent/?access_token={0}&count=2".format(user.access_token)
 			response = urlopen(url)
-			meta = json.loads(response.read().decode('utf8'))['data'][0]
+			meta = json.loads(response.read().decode('utf8'))['data'][1]
 			typ = meta['type']
 			if typ == 'image':
 				self.id = meta['id']
@@ -34,7 +34,10 @@ class InstagramPost():
 				self.caption = meta['caption']['text']
 				self.date = datetime.date.fromtimestamp(int(meta['created_time'])).strftime('%m/%d/%y')
 				self.user = meta['user']['username']
-				self.location = meta['location']['name']
+				try:
+					self.location = meta['location']['name']
+				except TypeError:
+					self.location = None
 				return True
 			return False
 		except URLError:

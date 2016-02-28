@@ -27,6 +27,7 @@ class User():
                     cls.users.remove(user)
             #remove from db
             del db[username]
+            db.sync()
             return True
         except KeyError:
             return False
@@ -37,17 +38,93 @@ class User():
         self.last_id = ""
 
     def write(self):
-        db[self.username] = user
+        db[self.username] = self
         db.sync()
 
     def __str__(self):
-        return str(self.__dict__)
+        return "User: {}, Token: {}, Last Photo ID: {}".format(self.username ,self.access_token,self.last_id)
 
 if __name__ == "__main__":
+    #run a CLI for managing users
 
-    def print_users(users):
-        for u in users:
-            print(u)
+    exit = False
+    while not exit:
+        try:
+            cli = input('>>>').split()
+            if len(cli) > 0:
+                cmd = cli[0]
+                if cmd == "help":
+                    print("User management for InstaPrinter")
+                    print("    add [user] [access_token]         #adds a new user")
+                    print("    remove [user]                     #removes an existing user")
+                    print("    reset [user]                      #reset a user's last_id")
+                    print("    list                              #lists all users")
+                    print("    exit                              #exit CLI")
+
+                elif cmd == "list":
+                    print("Users:")
+                    users = User.read()
+                    for u in users:
+                        print(u)
+
+                elif cmd == "add":
+                    if len(cli) != 3:
+                        print("invalid usage: add [user] [access_token]")
+                    else:
+                        username = cli[1]
+                        access_token = cli[2]
+
+                        if len(access_token) != 51:
+                            print("add failed: invalid access_token length")
+                            continue
+
+                        ret = User.add(username,access_token)
+                        print("added user: {} access_token: {}".format(cli[1],cli[2]))
+
+                elif cmd == "remove":
+                    if len(cli) != 2:
+                        print("invalid usage: remove [user]")
+                    else:
+                        username = cli[1]
+                        ret = User.remove(username)
+                        if ret:
+                            print("removed user: {}".format(username))
+                        else:
+                            print("remove failed: user does not exist")
+
+                elif cmd == "reset":
+                    if len(cli) != 2:
+                        print("invalid usage: reset [user]")
+                    else:
+                        username = cli[1]
+
+                        ret = False
+                        users = User.read()
+                        for u in users:
+                            if u.username == username:
+                                u.last_id = None
+                                u.write()
+                                ret = True
+                                break
+
+                        if ret:
+                            print("reset user: {}".format(username))
+                        else:
+                            print("reset failed: user does not exist")
+
+                elif cmd == "exit":
+                    exit = True
+
+                else:
+                    print("invalid command: enter 'help' to see commands")
+
+        except KeyboardInterrupt:
+            exit = True
+
+
+
+'''
+
 
     #add users
     print("adding 2 users")
@@ -69,3 +146,4 @@ if __name__ == "__main__":
     user.write()
     users = User.read()
     print_users(users)
+'''
