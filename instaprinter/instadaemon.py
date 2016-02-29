@@ -7,15 +7,15 @@ from instauser import User
 from instarender import InstagramTheme
 from instaparser import InstagramPost
 
-POLL_RATE = 5 #seconds
+POLL_RATE = 45 #seconds
 last_poll = 0
-READ_USERS_RATE = 2 #minutes
+READ_USERS_RATE = 60 #minutes
 last_read_users = 0
 
 #config variables
 printer_MAC = "00:04:48:10:7E:36"
 save_dir = "../../instaprinter-photos/"
-debug = True
+debug = False
 
 printer_queue = Queue()
 
@@ -29,24 +29,23 @@ def check_feed(user):
         user.write()
 
 def sys_call(cmd):
-    p = subprocess.Popen([cmd], stdout=subprocess.PIPE)
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     p.wait()
-    out = p.communicate()[0]
+    out = p.communicate()
     return out
 
 def send_to_printer(sourcefile):
-    try:
+   try:
         #connecting to printer
-        sys_call("rfkill unblock bluetooth")
-        sys_call("rfcomm unbind /dev/rfcomm0 " + printer_MAC)
-        sys_call("rfcomm bind /dev/rfcomm0 " + printer_MAC)
+        sys_call(["rfkill", "unblock", "bluetooth"])
+        sys_call(["rfcomm", "unbind", "/dev/rfcomm0", printer_MAC])
+        sys_call(["rfcomm", "bind", "/dev/rfcomm0", printer_MAC])
         #print image
-        out = sys_call("ussp-push /dev/rfcomm0 " + sourcefile + " destfile.jpg")
-        if out.find("Error") == 0:
+        out, error = sys_call(["ussp-push", "/dev/rfcomm0",  sourcefile , "destfile.jpg"])
+        if out.decode("utf-8").find("Error") != -1 or error.decode("utf-8").find("Error") != -1:
              print("[ Error ] Unable to transfer file to printer")
-    except OSError:
+   except OSError:
         print("[ Error ] Unable to execute bluetooth print")
-
 
 def print_queue():
     while printer_queue.qsize() > 0:

@@ -23,9 +23,9 @@ class InstagramPost():
 	# grab most recent post meta data
 	def poll_feed(self,user):
 		try:
-			url = "https://api.instagram.com/v1/users/self/media/recent/?access_token={0}&count=2".format(user.access_token)
+			url = "https://api.instagram.com/v1/users/self/media/recent/?access_token={0}&count=1".format(user.access_token)
 			response = urlopen(url)
-			meta = json.loads(response.read().decode('utf8'))['data'][1]
+			meta = json.loads(response.read().decode('utf8'))['data'][0]
 			typ = meta['type']
 			if typ == 'image':
 				self.id = meta['id']
