@@ -7,7 +7,7 @@ from instauser import User
 from instarender import InstagramTheme
 from instaparser import InstagramPost
 
-POLL_RATE = 45 #seconds
+POLL_RATE = 10 #seconds
 last_poll = 0
 READ_USERS_RATE = 60 #minutes
 last_read_users = 0
